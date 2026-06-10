@@ -145,7 +145,14 @@ app.post('/api/vision', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`\n🌏  Planet B-612  →  http://localhost:${PORT}\n`);
-});
+// In serverless environments (Vercel) we don't call .listen — the platform
+// invokes the exported Express handler per request.  Locally / on AWS App
+// Runner we DO want to listen, so we gate on the VERCEL env var.
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`\n🌏  Planet B-612  →  http://localhost:${PORT}\n`);
+  });
+}
+
+module.exports = app;
