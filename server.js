@@ -6,20 +6,54 @@ const app = express();
 app.use(express.json({ limit: '25mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const QWEN_BASE = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
-const API_KEY = process.env.QWEN_API_KEY;
+// ─── LLM upstream selection ─────────────────────────────────────────────────
+// Two modes, picked automatically:
+//   ① AI_GATEWAY_API_KEY set  → route through Vercel AI Gateway (required for
+//                                SuperAI hackathon Top-5 eligibility).
+//   ② QWEN_API_KEY    set     → direct DashScope (local-dev fallback).
+//
+// Both are OpenAI-compatible so the request body is identical.  We just swap
+// base URL + model alias.
+const USE_GATEWAY = !!process.env.AI_GATEWAY_API_KEY;
+
+const LLM_BASE = USE_GATEWAY
+  ? 'https://ai-gateway.vercel.sh/v1'
+  : 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+
+const LLM_API_KEY = USE_GATEWAY
+  ? process.env.AI_GATEWAY_API_KEY
+  : process.env.QWEN_API_KEY;
+
+// Model aliasing — keep the rest of the app referring to plain Qwen names
+// (`qwen-max`, `qwen-vl-max`); the server maps to whatever the upstream needs.
+const MODEL_MAP = USE_GATEWAY
+  ? {
+      'qwen-max':    process.env.GATEWAY_TEXT_MODEL   || 'alibaba/qwen3-max',
+      'qwen-vl-max': process.env.GATEWAY_VISION_MODEL || 'alibaba/qwen3-vl-instruct',
+    }
+  : {
+      'qwen-max':    'qwen-max',
+      'qwen-vl-max': 'qwen-vl-max',
+    };
+
+const resolveModel = (name) => MODEL_MAP[name] || name;
+
+console.log(`🛰  LLM upstream: ${USE_GATEWAY ? 'Vercel AI Gateway' : 'DashScope (direct)'}`);
+console.log(`    text   → ${resolveModel('qwen-max')}`);
+console.log(`    vision → ${resolveModel('qwen-vl-max')}`);
 
 // ─── Chat / Text ────────────────────────────────────────────────────────────
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages, model = 'qwen-max' } = req.body;
-    const r = await fetch(`${QWEN_BASE}/chat/completions`, {
+    const upstreamModel = resolveModel(model);
+    const r = await fetch(`${LLM_BASE}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${API_KEY}`
+        Authorization: `Bearer ${LLM_API_KEY}`
       },
-      body: JSON.stringify({ model, messages, stream: false, max_tokens: 2000 })
+      body: JSON.stringify({ model: upstreamModel, messages, stream: false, max_tokens: 2000 })
     });
     if (!r.ok) {
       const err = await r.text();
@@ -66,14 +100,14 @@ app.post('/api/vision', async (req, res) => {
 
     let r;
     try {
-      r = await fetch(`${QWEN_BASE}/chat/completions`, {
+      r = await fetch(`${LLM_BASE}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${API_KEY}`
+          Authorization: `Bearer ${LLM_API_KEY}`
         },
         body: JSON.stringify({
-          model: 'qwen-vl-max',
+          model: resolveModel('qwen-vl-max'),
           messages: [{
             role: 'user',
             content: [
@@ -113,5 +147,5 @@ app.post('/api/vision', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`\n🌏  WorldQuest  →  http://localhost:${PORT}\n`);
+  console.log(`\n🌏  Planet B-612  →  http://localhost:${PORT}\n`);
 });

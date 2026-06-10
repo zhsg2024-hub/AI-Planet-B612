@@ -1,8 +1,11 @@
 {
-  "name": "worldquest",
+  "name": "planet-b612",
   "version": "1.0.0",
-  "description": "AI-powered immersive travel adventure — Hackathon Demo",
+  "description": "Planet B-612 — a tiny planet that grows with your travels (SuperAI 2026 hackathon)",
   "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"

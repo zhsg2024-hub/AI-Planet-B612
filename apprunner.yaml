@@ -1,0 +1,14 @@
+version: 1.0
+runtime: nodejs18
+build:
+  commands:
+    build:
+      - npm install --omit=dev
+run:
+  runtime-version: 18
+  command: npm start
+  network:
+    port: 3000
+    env: PORT
+  # Secret env vars (AI_GATEWAY_API_KEY) are set in the AWS App Runner
+  # Console → Configuration → Environment variables.

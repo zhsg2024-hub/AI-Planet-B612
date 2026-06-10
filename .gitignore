@@ -5,6 +5,9 @@
 
 # Dependencies
 node_modules/
+.venv-slides/
+*.pyc
+__pycache__/
 
 # Logs
 npm-debug.log*

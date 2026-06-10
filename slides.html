@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WorldQuest · Pitch Deck</title>
+<title>Planet B-612 · Pitch Deck</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -282,33 +282,106 @@
     font-weight: 600;
   }
 
-  /* Agent architecture (Slide 5) */
-  .agents-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-top: 28px;
+  /* Agent architecture (Slide 5) — hierarchy + flow */
+  .arch-flow {
+    position: relative;
     flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.05fr;
+    grid-template-rows: auto auto auto;
+    column-gap: 24px;
+    row-gap: 36px;
+    margin-top: 28px;
+    align-content: start;
   }
-  .agent {
+  .arch-node {
     background: linear-gradient(135deg, rgba(124,58,237,.10), rgba(0,212,255,.06));
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 18px 20px;
-    display: flex; flex-direction: column; gap: 6px;
+    padding: 14px 18px;
+    display: flex; flex-direction: column; gap: 4px;
     position: relative;
+    min-height: 96px;
   }
-  .agent::before {
+  .arch-node::before {
     content: '';
-    position: absolute; top: 18px; right: 18px;
+    position: absolute; top: 14px; right: 14px;
     width: 8px; height: 8px;
     background: var(--accent);
     border-radius: 50%;
     box-shadow: 0 0 8px var(--accent);
   }
-  .agent-icon { font-size: 24px; line-height: 1; }
-  .agent-name { font-size: 16px; font-weight: 700; color: var(--accent); margin-top: 2px; }
-  .agent-role { font-size: 12.5px; color: var(--txt2); line-height: 1.5; }
+  .arch-node.core {
+    background: linear-gradient(135deg, rgba(0,212,255,.22), rgba(124,58,237,.14));
+    border-color: rgba(0,212,255,.55);
+    box-shadow: 0 0 24px rgba(0,212,255,.18);
+  }
+  .arch-node.entry {
+    background: rgba(255,255,255,.04);
+    border-color: var(--border);
+    text-align: center;
+    align-items: center; justify-content: center;
+    min-height: 60px;
+  }
+  .arch-node.entry::before { display: none; }
+  .arch-node.entry .arch-icon { font-size: 18px; }
+  .arch-node.entry .arch-name { font-size: 13px; color: var(--txt); }
+  .arch-icon { font-size: 22px; line-height: 1; }
+  .arch-name { font-size: 14.5px; font-weight: 700; color: var(--accent); margin-top: 2px; }
+  .arch-role { font-size: 11px; color: var(--txt2); line-height: 1.45; }
+  .arch-tier-label {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 10.5px; color: var(--txt2);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: -16px;
+  }
+  .arch-tier-label::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+  .arch-side {
+    grid-column: 4; grid-row: 1 / 4;
+    background: linear-gradient(135deg, rgba(255,209,102,.08), rgba(255,209,102,.02));
+    border: 1px dashed rgba(255,209,102,.4);
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 8px;
+    align-self: stretch;
+    position: relative;
+  }
+  .arch-side::before {
+    content: 'AUTONOMOUS LOOP';
+    position: absolute; top: -10px; right: 16px;
+    background: var(--bg);
+    color: var(--gold);
+    font-size: 9.5px; font-family: 'JetBrains Mono', monospace;
+    padding: 0 8px; letter-spacing: 1.5px;
+  }
+  .arch-side .arch-name { color: var(--gold); }
+  .arch-side .arch-side-flow {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: rgba(0,0,0,.25);
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--txt2);
+    line-height: 1.55;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .arch-side .arch-side-flow strong { color: var(--gold); }
+  /* Routing line — vertical from entry to orchestrator, then branching */
+  .arch-flow .arrow-down,
+  .arch-flow .arrow-right {
+    position: absolute;
+    color: var(--accent);
+    font-size: 18px;
+    opacity: .7;
+    pointer-events: none;
+  }
 
   /* Feature grid (Slide 6) */
   .features {
@@ -450,13 +523,13 @@
   <!-- ═══ SLIDE 1 · HERO ═════════════════════════════════════════════ -->
   <section class="slide active" data-i="1">
     <div class="topbar">
-      <div class="brand"><span class="brand-dot"></span> WORLDQUEST</div>
+      <div class="brand"><span class="brand-dot"></span> PLANET B-612</div>
       <div>SuperAI Singapore · June 2026</div>
     </div>
     <div class="hero">
       <div class="hero-emoji">🌍🦊</div>
       <div class="eyebrow">A LITTLE-PRINCE-INSPIRED COMPANION APP</div>
-      <h1>WorldQuest</h1>
+      <h1>Planet B-612</h1>
       <div class="hero-tagline">
         A tiny planet that <em>grows with your travels</em>,
         tended by a fox who waits for the stories you bring back.
@@ -475,7 +548,7 @@
   <!-- ═══ SLIDE 2 · PROBLEM ═════════════════════════════════════════ -->
   <section class="slide" data-i="2">
     <div class="topbar">
-      <div class="brand"><span class="brand-dot"></span> WORLDQUEST</div>
+      <div class="brand"><span class="brand-dot"></span> PLANET B-612</div>
       <div>The Problem</div>
     </div>
     <div class="eyebrow">WHY THIS</div>
@@ -493,7 +566,7 @@
         </ul>
       </div>
       <div class="card accent">
-        <h3>🌍 WorldQuest</h3>
+        <h3>🌍 Planet B-612</h3>
         <ul>
           <li>Each photo becomes a <strong>living 3D model</strong> on your planet</li>
           <li>An AI fox identifies it and tells you the deep local context</li>
@@ -507,7 +580,7 @@
   <!-- ═══ SLIDE 3 · CONCEPT ═════════════════════════════════════════ -->
   <section class="slide" data-i="3">
     <div class="topbar">
-      <div class="brand"><span class="brand-dot"></span> WORLDQUEST</div>
+      <div class="brand"><span class="brand-dot"></span> PLANET B-612</div>
       <div>The Concept</div>
     </div>
     <div class="eyebrow">THE LOOP</div>
@@ -548,7 +621,7 @@
   <!-- ═══ SLIDE 4 · UI SCREENS ═════════════════════════════════════════ -->
   <section class="slide" data-i="4">
     <div class="topbar">
-      <div class="brand"><span class="brand-dot"></span> WORLDQUEST</div>
+      <div class="brand"><span class="brand-dot"></span> PLANET B-612</div>
       <div>The Experience</div>
     </div>
     <div class="eyebrow">FOUR SURFACES, ONE WORLD</div>
@@ -592,43 +665,66 @@
   <!-- ═══ SLIDE 5 · AGENT ARCHITECTURE ═════════════════════════════════════════ -->
   <section class="slide" data-i="5">
     <div class="topbar">
-      <div class="brand"><span class="brand-dot"></span> WORLDQUEST</div>
+      <div class="brand"><span class="brand-dot"></span> PLANET B-612</div>
       <div>Architecture</div>
     </div>
-    <div class="eyebrow">AGENT ORCHESTRATION</div>
-    <h2>Six agents. <span class="accent">One fox.</span></h2>
-    <div class="subtitle">Each agent has a single, sharp job. An orchestrator routes intent to the right specialist; results flow back into a shared planet context.</div>
+    <div class="eyebrow">AGENT HIERARCHY & FLOW</div>
+    <h2>One router. <span class="accent">Two pipelines.</span> One autonomous fox.</h2>
+    <div class="subtitle">A single <strong>Orchestrator</strong> sits between the user and every specialist. It dispatches each input into the right pipeline — <em>identification</em> or <em>planning</em> — while <strong>Fox Life</strong> runs in parallel as its own autonomous loop.</div>
 
-    <div class="agents-grid">
-      <div class="agent" style="--i:0">
-        <div class="agent-icon">🧠</div>
-        <div class="agent-name">Orchestrator</div>
-        <div class="agent-role">Routes user input. Decides whether this is a message, a photo, a task action, or a landmark query — then dispatches.</div>
+    <div class="arch-flow">
+      <!-- TIER 0 · entry -->
+      <div class="arch-tier-label">Tier 0 · Entry</div>
+      <div class="arch-node entry" style="grid-column:2 / 3;">
+        <div class="arch-icon">👤</div>
+        <div class="arch-name">User · text / photo / tap</div>
       </div>
-      <div class="agent" style="--i:1">
-        <div class="agent-icon">✈️</div>
-        <div class="agent-name">Planner</div>
-        <div class="agent-role">SG local-guide brain. Builds 30-90-min quests with depthAngle, time window, and duration. Knows festivals, weather, hawker rhythms.</div>
+
+      <!-- TIER 1 · router -->
+      <div class="arch-tier-label">Tier 1 · Router</div>
+      <div class="arch-node core" style="grid-column:2 / 3;">
+        <div class="arch-icon">🧠</div>
+        <div class="arch-name">Orchestrator</div>
+        <div class="arch-role">Classifies intent (message / photo / task / landmark) and dispatches to one of two pipelines. Owns shared planet context.</div>
       </div>
-      <div class="agent" style="--i:2">
-        <div class="agent-icon">👁️</div>
-        <div class="agent-name">Vision</div>
-        <div class="agent-role">Qwen-VL-Max identifies the photo into 1 of 20 categories + structured details (ingredients, sugar, address, MRT…) — gets passed existing codex for de-dupe.</div>
+
+      <!-- TIER 2 · specialists (two pipelines) -->
+      <div class="arch-tier-label">Tier 2 · Specialists</div>
+      <div class="arch-node" style="grid-column:1 / 2;">
+        <div class="arch-icon">👁️</div>
+        <div class="arch-name">Vision <span style="font-size:10px;color:var(--txt2);font-weight:500;">· photo pipeline</span></div>
+        <div class="arch-role">Qwen-VL-Max → 1 of 20 categories + structured details. Receives existing codex for de-dupe.</div>
       </div>
-      <div class="agent" style="--i:3">
-        <div class="agent-icon">📖</div>
-        <div class="agent-name">Story</div>
-        <div class="agent-role">Generates Insight: deep historical / cultural / data-rich background you can't see from the photo itself — in the fox's voice.</div>
+      <div class="arch-node" style="grid-column:2 / 3;">
+        <div class="arch-icon">📖</div>
+        <div class="arch-name">Story <span style="font-size:10px;color:var(--txt2);font-weight:500;">· enriches Vision</span></div>
+        <div class="arch-role">Called by Orchestrator after Vision succeeds. Generates deep historical / cultural Insight in the fox's voice.</div>
       </div>
-      <div class="agent" style="--i:4">
-        <div class="agent-icon">🎁</div>
-        <div class="agent-name">Sponsor</div>
-        <div class="agent-role">Opportunistically injects real sponsored quests (SuperAI 2026, Tiger Beer, Mr. Coconut) when keywords match — clearly badged as Sponsored.</div>
+      <div class="arch-node" style="grid-column:3 / 4;">
+        <div class="arch-icon">✈️</div>
+        <div class="arch-name">Planner <span style="font-size:10px;color:var(--txt2);font-weight:500;">· text pipeline</span></div>
+        <div class="arch-role">SG local-guide brain. Builds 30-90-min quests grounded in time, weather, festivals, hawker rhythms — and asks Sponsor.</div>
       </div>
-      <div class="agent" style="--i:5">
-        <div class="agent-icon">🦊</div>
-        <div class="agent-name">Fox Life</div>
-        <div class="agent-role">Tabikaeru-style autonomous loop. Picks an activity, writes a 60-110 word diary entry, occasionally brings back a keepsake.</div>
+
+      <!-- Sponsor — sub-call from Planner -->
+      <div class="arch-node" style="grid-column:3 / 4; background:linear-gradient(135deg, rgba(255,209,102,.10), rgba(255,209,102,.02)); border-color:rgba(255,209,102,.35);">
+        <div class="arch-icon">🎁</div>
+        <div class="arch-name" style="color:var(--gold);">Sponsor <span style="font-size:10px;color:var(--txt2);font-weight:500;">· sub-call of Planner</span></div>
+        <div class="arch-role">When keywords match (SuperAI / Tiger / Mr. Coconut), Planner injects a clearly-badged sponsored quest into its result.</div>
+      </div>
+
+      <!-- Side: Fox Life autonomous loop -->
+      <div class="arch-side">
+        <div class="arch-icon">🦊</div>
+        <div class="arch-name">Fox Life</div>
+        <div class="arch-role" style="font-size:11.5px;">Runs in its own timer-driven loop, independent of the Orchestrator. Picks activities based on bond level + current planet state.</div>
+        <div class="arch-side-flow">
+          <strong>every ~15 min</strong> →<br>
+          pick activity →<br>
+          write 60–110 word diary →<br>
+          sometimes return with a keepsake →<br>
+          write back to planet context
+        </div>
       </div>
     </div>
   </section>
@@ -636,42 +732,42 @@
   <!-- ═══ SLIDE 6 · TECH + FEATURES ═════════════════════════════════════════ -->
   <section class="slide" data-i="6">
     <div class="topbar">
-      <div class="brand"><span class="brand-dot"></span> WORLDQUEST</div>
-      <div>Tech & Features</div>
+      <div class="brand"><span class="brand-dot"></span> PLANET B-612</div>
+      <div>Problems & Solutions</div>
     </div>
-    <div class="eyebrow">UNDER THE HOOD</div>
-    <h2>Hand-crafted, <span class="accent">single-file architecture</span>.</h2>
+    <div class="eyebrow">PROBLEMS WE HIT · HOW WE FIXED THEM</div>
+    <h2>Six hard problems. <span class="accent">Six shipped fixes.</span></h2>
 
     <div class="features">
       <div class="feat" style="--i:0">
-        <div class="feat-emoji">🌐</div>
-        <div class="feat-title">True 3D globe</div>
-        <div class="feat-desc">Quaternion-based trackball, 360° free rotation, momentum + idle drift. Items oriented via north-aware tangent basis so they stand upright everywhere.</div>
+        <div class="feat-emoji">🐛</div>
+        <div class="feat-title">Laksa → "landmark"</div>
+        <div class="feat-desc"><strong>Problem:</strong> Vision mis-classified hawker food as buildings, then UI silently showed fake fallback data.<br><strong>Fix:</strong> Negative-constraint prompt with food examples; on failure show "AI couldn't read this" + Retry / Manual buttons — never fake.</div>
       </div>
       <div class="feat" style="--i:1">
-        <div class="feat-emoji">🎯</div>
-        <div class="feat-title">Non-overlap placement</div>
-        <div class="feat-desc">Spherical spiral search using great-circle distance picks a free spot near each landmark anchor — guarantees a clean, readable planet layout.</div>
+        <div class="feat-emoji">⏱️</div>
+        <div class="feat-title">2-minute API hangs</div>
+        <div class="feat-desc"><strong>Problem:</strong> Server logs showed Qwen calls aborting at ~30 ms — wrong <code>req.on('close')</code> handler killed every request.<br><strong>Fix:</strong> Swapped to <code>res.on('close')</code>, added 50 s server timeout + 60 s client timeout + true Cancel button.</div>
       </div>
       <div class="feat" style="--i:2">
-        <div class="feat-emoji">🎨</div>
-        <div class="feat-title">20 low-poly models</div>
-        <div class="feat-desc">Hand-coded Three.js geometry for every category: noodle bowl, fish, butterfly, temple dome, MBS triple-tower, fashion hanger, kopi mug.</div>
+        <div class="feat-emoji">🌍</div>
+        <div class="feat-title">Models stacking on each other</div>
+        <div class="feat-desc"><strong>Problem:</strong> New items spawned on top of existing landmarks — a pile, not a planet.<br><strong>Fix:</strong> Spherical spiral search using great-circle distance picks the nearest free spot to each anchor — guaranteed non-overlap.</div>
       </div>
       <div class="feat" style="--i:3">
-        <div class="feat-emoji">🧠</div>
-        <div class="feat-title">Context-aware Vision</div>
-        <div class="feat-desc">Prompt includes the user's existing codex + scene chips. Output JSON is parsed with a 3-stage resilient parser (fences / unescaped newlines / trailing commas).</div>
+        <div class="feat-emoji">🧭</div>
+        <div class="feat-title">Buildings tilted on the sphere</div>
+        <div class="feat-desc"><strong>Problem:</strong> Models leaned at random Y-angles after placement; flagpoles aimed anywhere.<br><strong>Fix:</strong> Build an orthonormal basis from each spot (radial-up / world-north / east) → quaternion. Models stand upright everywhere, even at poles.</div>
       </div>
       <div class="feat" style="--i:4">
-        <div class="feat-emoji">📤</div>
-        <div class="feat-title">Pure-Canvas share card</div>
-        <div class="feat-desc">1080×1350 portrait card generated entirely in browser — gradient sky, photo grid, planet ID, level, today's stats. No libraries.</div>
+        <div class="feat-emoji">♻️</div>
+        <div class="feat-title">"Kaya Toast" ≠ "咖椰吐司"</div>
+        <div class="feat-desc"><strong>Problem:</strong> AI returned slightly different names for the same dish → duplicates in the codex.<br><strong>Fix:</strong> Pass existing codex into the Vision prompt + fuzzy normalize (strip punctuation, common prefixes, lowercase) before dedupe.</div>
       </div>
       <div class="feat" style="--i:5">
-        <div class="feat-emoji">💾</div>
-        <div class="feat-title">localStorage-only</div>
-        <div class="feat-desc">No backend. Each planet (with all its items, positions, fox bond, diary, achievements) lives entirely in the user's browser.</div>
+        <div class="feat-emoji">✨</div>
+        <div class="feat-title">Highlight hidden by modal</div>
+        <div class="feat-desc"><strong>Problem:</strong> Clicking a codex card highlighted the model, but the full-screen detail modal covered the planet — invisible feedback.<br><strong>Fix:</strong> Right-docked the modal, lowered overlay opacity, added halo + floating arrow mesh that survives on top.</div>
       </div>
     </div>
 
@@ -688,7 +784,7 @@
   <!-- ═══ SLIDE 7 · ROADMAP / CLOSE ═════════════════════════════════════════ -->
   <section class="slide" data-i="7">
     <div class="topbar">
-      <div class="brand"><span class="brand-dot"></span> WORLDQUEST</div>
+      <div class="brand"><span class="brand-dot"></span> PLANET B-612</div>
       <div>What's Next</div>
     </div>
     <div class="eyebrow">ROADMAP</div>
