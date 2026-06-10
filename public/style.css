@@ -4576,6 +4576,9 @@ body:has(#gallery-panel.collapsed) #map-title-overlay {
   overflow: hidden;
   animation: fadeUp .2s ease;
   transition: border-color .2s;
+  /* Don't shrink — keep each entry's natural height so the parent
+     scrolls when content exceeds the container instead of squishing rows. */
+  flex-shrink: 0;
 }
 .mon-entry.running  { border-color: rgba(0,212,255,.3); }
 .mon-entry.done     { border-color: rgba(0,255,136,.2); }
