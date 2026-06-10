@@ -205,12 +205,13 @@ add_text(s, Inches(0.95), Inches(6.2), Inches(11), Inches(0.4),
          'VISION + AGENTS + 3D   ·   BUILT IN 1 DAY   ·   SINGAPORE-THEMED',
          size=11, color=TXT2, font='JetBrains Mono', bold=True)
 
-# Chip pill at the bottom
-chip = add_rounded(s, Inches(0.95), Inches(6.65), Inches(2.1), Inches(0.4),
+# Chip pill at the bottom (live demo URL)
+chip = add_rounded(s, Inches(0.95), Inches(6.65), Inches(4.6), Inches(0.4),
                    RGBColor(0x00, 0x35, 0x4a), border=ACCENT, radius=0.5)
-add_text(s, Inches(0.95), Inches(6.65), Inches(2.1), Inches(0.4),
-         '✦  Live Demo Inside', size=12, color=ACCENT, bold=True,
-         align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+add_text(s, Inches(0.95), Inches(6.65), Inches(4.6), Inches(0.4),
+         '✦  ai-planet-b612-superai.vercel.app', size=12, color=ACCENT, bold=True,
+         align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE,
+         font='JetBrains Mono')
 
 # ════════════════════════════════════════════════════════════════════════════
 # SLIDE 2 — PROBLEM
@@ -661,12 +662,18 @@ for i, (num, title, desc) in enumerate(roadmap):
              desc, size=12.5, color=TXT)
 
 # Closer
-add_text(s, Inches(0.7), Inches(6.0), Inches(12), Inches(0.5),
+add_text(s, Inches(0.7), Inches(5.95), Inches(12), Inches(0.5),
          '🦊  Thank you', size=28, color=WHITE, bold=True,
          align=PP_ALIGN.CENTER)
-add_text(s, Inches(0.7), Inches(6.6), Inches(12), Inches(0.35),
-         'Built in one day for SuperAI Singapore 2026  ·  github.com/zhsg2024-hub/AI-Planet-B612',
-         size=12, color=TXT2, italic=True, align=PP_ALIGN.CENTER, font='JetBrains Mono')
+add_text(s, Inches(0.7), Inches(6.55), Inches(12), Inches(0.3),
+         'Built in one day for SuperAI Singapore 2026',
+         size=12, color=TXT2, italic=True, align=PP_ALIGN.CENTER, font='Inter')
+add_multi_text(s, Inches(0.7), Inches(6.95), Inches(12), Inches(0.3), [
+    ('🌐  Live demo  ',                              {'color': TXT2, 'size': 11, 'font': 'JetBrains Mono'}),
+    ('ai-planet-b612-superai.vercel.app',            {'color': ACCENT, 'size': 11, 'bold': True, 'font': 'JetBrains Mono'}),
+    ('     📦  Code  ',                              {'color': TXT2, 'size': 11, 'font': 'JetBrains Mono'}),
+    ('github.com/zhsg2024-hub/AI-Planet-B612',       {'color': ACCENT, 'size': 11, 'bold': True, 'font': 'JetBrains Mono'}),
+], align=PP_ALIGN.CENTER)
 
 # ── Save ────────────────────────────────────────────────────────────────────
 out = 'PlanetB612_pitch.pptx'

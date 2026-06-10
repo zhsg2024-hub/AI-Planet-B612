@@ -115,12 +115,13 @@ Every `git push` to `main` triggers a fresh deploy automatically.
 | Item | Link / Path |
 |---|---|
 | **Source code** | <https://github.com/zhsg2024-hub/AI-Planet-B612> |
-| **Live demo** | _(set after first App Runner deploy)_ |
+| **Live demo** | <https://ai-planet-b612-superai.vercel.app> |
 | **Pitch deck** | [`PlanetB612_pitch.pptx`](./PlanetB612_pitch.pptx) — 7 slides, 16:9 |
 | **Pitch deck (web)** | [`slides.html`](./slides.html) |
 | **Hackathon** | [SuperAI NEXT Hackathon · DoraHacks](https://dorahacks.io/hackathon/next-hackathon/detail) |
 
 ### Sponsor integration · Top-5 eligibility
 
-- ✅ **Vercel AI Gateway** — all LLM calls (Vision + Planner + Story + Sponsor + Fox Life) route through `ai-gateway.vercel.sh`. See [`server.js`](./server.js#L9-L43).
-- ✅ **AWS** — production app hosted on **AWS App Runner**.
+- ✅ **Vercel Hosting** — production app deployed at <https://ai-planet-b612-superai.vercel.app> (Singapore region).
+- ✅ **Vercel AI Gateway** — `server.js` auto-routes LLM calls through `ai-gateway.vercel.sh` whenever `AI_GATEWAY_API_KEY` is set (see [`server.js`](./server.js#L9-L43)).
+- ☐ **AWS** — `apprunner.yaml` is committed and ready; AWS App Runner deployment is the next step for full Top-5 ("running on AWS and Vercel") eligibility.
