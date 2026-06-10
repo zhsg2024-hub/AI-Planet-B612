@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorldQuest — Grow Your Planet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══ AGENT STATUS BAR ═══════════════════════════════════════════════ -->
+  <header id="status-bar">
+    <div class="brand">
+      <span class="brand-icon">🌏</span>
+      <span class="brand-name">WorldQuest</span>
+    </div>
+
+    <div class="agent-pipeline">
+      <span class="pipeline-label">AI Agents</span>
+      <div class="pipeline-nodes">
+        <span class="agent-node" id="status-orchestrator">🧠 Orchestrator</span>
+        <span class="arrow">›</span>
+        <span class="agent-node" id="status-planner">✈️ Planner</span>
+        <span class="arrow">›</span>
+        <span class="agent-node" id="status-vision">👁️ Vision</span>
+        <span class="arrow">›</span>
+        <span class="agent-node" id="status-story">📖 Story</span>
+        <span class="arrow">›</span>
+        <span class="agent-node" id="status-sponsor">🎁 Sponsor</span>
+        <span class="arrow">›</span>
+        <span class="agent-node fox-node" id="status-foxlife">🦊 Fox Life</span>
+      </div>
+    </div>
+
+    <div class="hud">
+      <!-- Bond with the fox — core companion metric -->
+      <div class="bond-chip" title="Bond with the fox — click to open Planet Dashboard" onclick="window.openPlanetDashboard()">
+        <span class="bond-chip-icon" id="bond-icon">🦊</span>
+        <span class="bond-chip-value" id="bond-value">0</span>
+        <span class="bond-chip-unit">Bond</span>
+      </div>
+
+      <!-- Planet pill — primary stats summary -->
+      <div class="planet-pill" onclick="window.openPlanetDashboard()" title="Click to open Planet Dashboard">
+        <span class="planet-pill-icon">🌍</span>
+        <div class="planet-pill-info">
+          <div class="planet-pill-row1">
+            <span class="planet-pill-name" id="planet-name">My Planet</span>
+            <span class="planet-pill-time" id="planet-time">D1 · 🌅</span>
+          </div>
+          <div class="planet-pill-row2">
+            <span class="planet-pill-level-text">Lv.<span id="planet-level">1</span></span>
+            <div class="planet-level-bar"><div class="planet-level-fill" id="planet-level-fill"></div></div>
+            <span class="planet-fox-status hidden" id="planet-fox-status"></span>
+          </div>
+        </div>
+        <!-- Inline stat chips -->
+        <div class="planet-pill-stats">
+          <span class="pp-stat" title="Civilization"><span>🏛️</span><span id="stat-civ">0</span></span>
+          <span class="pp-stat eco" title="Ecology"><span>🌿</span><span id="stat-eco">0</span></span>
+          <span class="pp-stat energy" title="Energy"><span>⚡</span><span id="stat-energy">0</span></span>
+        </div>
+        <span class="planet-pill-chevron">›</span>
+      </div>
+
+      <!-- Utility buttons (smaller, deprioritized) -->
+      <div class="util-group">
+        <button class="util-btn" id="demo-btn" onclick="runDemo()" title="Quick demo">▶</button>
+        <button class="util-btn fox" onclick="AgentSystem.foxActNow()" title="Wake the fox">🦊</button>
+        <button class="util-btn danger" onclick="if(confirm('Say goodbye to this fox and start over? All data will be erased.'))AgentSystem.clearState()" title="Reset (erase everything)">🗑</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Global file input — placed at body level for maximum compatibility -->
+  <input type="file" id="photo-upload" accept="image/*"
+    style="position:fixed;top:-300px;left:-300px;width:1px;height:1px;opacity:0;">
+
+  <!-- agent-monitor moved to map overlay (see #map-wrap) -->
+
+  <!-- ═══ MAIN LAYOUT ═════════════════════════════════════════════════════ -->
+  <main id="main">
+
+    <!-- (Chat panel removed — fox journal now lives in #journal-modal, opened
+         from the center FAB) -->
+
+    <!-- ── CENTER: 3D Map (full width) ────────────────────────────────── -->
+    <div id="map-wrap">
+      <canvas id="three-canvas" draggable="false"></canvas>
+
+      <div id="map-title-overlay">
+        <div class="map-title">🦊 The Fox's Planet</div>
+        <div class="map-subtitle">B-612 · The world you bring back</div>
+      </div>
+
+      <div id="map-hint">Drag to rotate · Scroll to zoom · Hover for details · Drag creatures</div>
+
+      <!-- New-task toast (appears centered top, auto-dismisses) -->
+      <div id="new-task-toast" class="hidden"></div>
+
+      <!-- Task completion toast (centered top, green) -->
+      <div id="task-done-toast" class="hidden"></div>
+
+      <!-- Planet evolution toast (level up / milestone) -->
+      <div id="evolution-toast" class="hidden"></div>
+
+      <!-- Planet dashboard modal -->
+      <div id="planet-dashboard" class="hidden">
+        <div class="pd-overlay" onclick="window.closePlanetDashboard()"></div>
+        <div class="pd-content">
+          <div class="pd-header">
+            <span class="pd-icon">🌍</span>
+            <input id="pd-name-input" type="text" placeholder="Name your planet" maxlength="20">
+            <span class="pd-level">Lv.<span id="pd-level">1</span></span>
+            <button class="pd-close" onclick="window.closePlanetDashboard()">✕</button>
+          </div>
+
+          <!-- ── Bond with the fox (core companion metric) ── -->
+          <div class="pd-section-title"><span>❤️ Bond with the Fox</span></div>
+          <div class="pd-bond-block">
+            <div class="pd-bond-row1">
+              <span class="pd-bond-icon" id="pd-bond-icon">🦊</span>
+              <div class="pd-bond-info">
+                <div class="pd-bond-name" id="pd-bond-name">A Stranger Fox</div>
+                <div class="pd-bond-desc" id="pd-bond-desc">Just met</div>
+              </div>
+              <div class="pd-bond-value-wrap">
+                <span class="pd-bond-value" id="pd-bond-value">0</span>
+                <span class="pd-bond-unit">Bond</span>
+              </div>
+            </div>
+            <div class="pd-bond-bar">
+              <div class="pd-bond-fill" id="pd-bond-fill"></div>
+            </div>
+            <div class="pd-bond-next" id="pd-bond-next">+10 → Slowly Familiar</div>
+          </div>
+
+          <div class="pd-section-title"><span>🌍 Planet Evolution</span></div>
+          <div class="pd-progress-section">
+            <div class="pd-progress-header">
+              <span>To next level</span>
+              <span id="pd-progress-text">0 / 5</span>
+            </div>
+            <div class="pd-progress-bar"><div id="pd-progress-fill"></div></div>
+          </div>
+
+          <div class="pd-section-title"><span>📊 Planet Stats</span></div>
+          <div class="pd-stats-grid">
+            <div class="pd-stat-card civ">
+              <div class="pd-stat-icon">🏛️</div>
+              <div class="pd-stat-num" id="pd-stat-civ">0</div>
+              <div class="pd-stat-label">Civilization</div>
+              <div class="pd-stat-detail">Buildings · Landmarks · Signs · Vehicles</div>
+            </div>
+            <div class="pd-stat-card eco">
+              <div class="pd-stat-icon">🌿</div>
+              <div class="pd-stat-num" id="pd-stat-eco">0</div>
+              <div class="pd-stat-label">Ecology</div>
+              <div class="pd-stat-detail">Plants · Animals · Natural life</div>
+            </div>
+            <div class="pd-stat-card culture">
+              <div class="pd-stat-icon">🍜</div>
+              <div class="pd-stat-num" id="pd-stat-culture">0</div>
+              <div class="pd-stat-label">Culture</div>
+              <div class="pd-stat-detail">Food · People · Cultural creations</div>
+            </div>
+            <div class="pd-stat-card energy">
+              <div class="pd-stat-icon">⚡</div>
+              <div class="pd-stat-num" id="pd-stat-energy">0</div>
+              <div class="pd-stat-label">Energy</div>
+              <div class="pd-stat-detail">Scans + completed tasks</div>
+            </div>
+          </div>
+
+          <div class="pd-diary">
+            <div class="pd-section-title">
+              <span>📖 Fox's Diary</span>
+              <span class="pd-diary-count" id="pd-diary-count">0 entries</span>
+            </div>
+            <div id="pd-fox-now" class="pd-fox-now hidden">
+              <div class="pd-fox-now-pulse"></div>
+              <div class="pd-fox-now-text">
+                <span class="pd-fox-now-label">🦊 Right now the fox is</span>
+                <span id="pd-fox-now-action">…</span>
+              </div>
+            </div>
+            <div id="pd-diary-list"></div>
+          </div>
+
+          <div class="pd-milestones">
+            <div class="pd-section-title">🚀 Evolution Milestones</div>
+            <div id="pd-milestone-list"></div>
+          </div>
+
+          <div class="pd-achievements">
+            <div class="pd-section-title">🏆 Planet Honors · Achievements</div>
+            <div id="achievements-container" class="pd-ach-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ RIGHT-STACK — 3 panels share the right column, each capped in size ═══ -->
+      <div id="right-stack">
+
+      <!-- Fox status card (expanded by default, shows 6-hour trail) -->
+      <div id="fox-status-card" class="expanded" onclick="window.toggleFoxTimeline()" title="Click to fold / unfold the trail">
+        <div class="fox-status-main">
+          <div class="fox-status-avatar">🦊</div>
+          <div class="fox-status-body">
+            <div class="fox-status-text" id="fox-status-text">Watching the stars</div>
+            <div class="fox-status-time" id="fox-status-time">D1 · 🌅 Dawn</div>
+          </div>
+          <div class="fox-status-pulse" id="fox-status-pulse"></div>
+          <span class="fox-status-toggle" id="fox-status-toggle">▾</span>
+        </div>
+        <div class="fox-status-timeline" id="fox-status-timeline">
+          <div class="fst-header">
+            <span>Past 6 hrs · 1 planet day</span>
+            <span class="fst-legend">
+              <span class="fst-dot active"></span>Active
+              <span class="fst-dot rest"></span>Rest
+            </span>
+          </div>
+          <div class="fst-strip" id="fst-strip"></div>
+          <div class="fst-footer" id="fst-footer">Click to collapse</div>
+        </div>
+      </div>
+
+      <!-- ── Fox's sticky notes HUD (tabbed, mirrors the gallery) ── -->
+      <div id="task-hud">
+        <div id="thud-header" onclick="window.toggleTaskHud()" title="Collapse / expand notes">
+          <span class="thud-icon">📖</span>
+          <span class="thud-label">Fox's Sticky Notes</span>
+          <span id="thud-score-badge" class="thud-badge hidden">0/0</span>
+          <span class="thud-chevron" id="thud-chevron">▾</span>
+        </div>
+        <div id="thud-tabs">
+          <button class="thud-tab active" data-cat="main" type="button">
+            <span class="thud-tab-icon">⭐</span>
+            <span class="thud-tab-label">Wishes</span>
+            <span class="thud-tab-count">0</span>
+          </button>
+          <button class="thud-tab" data-cat="side" type="button">
+            <span class="thud-tab-icon">🌟</span>
+            <span class="thud-tab-label">Side</span>
+            <span class="thud-tab-count">0</span>
+          </button>
+          <button class="thud-tab" data-cat="special" type="button">
+            <span class="thud-tab-icon">🎁</span>
+            <span class="thud-tab-label">Chance</span>
+            <span class="thud-tab-count">0</span>
+          </button>
+        </div>
+        <div id="thud-content">
+          <div class="thud-items" data-cat="main">
+            <div class="thud-empty">No wishes yet…<br>Bring back a discovery to begin</div>
+          </div>
+          <div class="thud-items hidden" data-cat="side">
+            <div class="thud-empty">No side quests yet</div>
+          </div>
+          <div class="thud-items hidden" data-cat="special">
+            <div class="thud-empty">No chance encounters yet</div>
+          </div>
+        </div>
+        <button class="thud-open-btn" onclick="window.openTaskPanel()">Open Notebook →</button>
+      </div>
+
+      <!-- ═══ AGENT MONITOR — sits inside right-stack with the other two ═══ -->
+      <div id="agent-monitor">
+        <div id="monitor-header" onclick="window.toggleMonitor()" title="Collapse / expand Agent Monitor">
+          <div class="monitor-title">
+            <span class="monitor-dot"></span>
+            <span class="monitor-icon">🔍</span>
+            <span>Agent Monitor</span>
+            <span id="monitor-running-badge" class="hidden">0 running</span>
+          </div>
+          <div class="monitor-actions">
+            <button id="monitor-abort-all" title="Stop all running agents" onclick="event.stopPropagation()">⛔</button>
+            <button id="monitor-clear-btn" title="Clear log" onclick="event.stopPropagation()">🗑</button>
+            <span class="monitor-chevron" id="monitor-chevron">▾</span>
+          </div>
+        </div>
+        <div id="monitor-entries">
+          <div class="monitor-empty">The fox is napping…<br>A photo or message will wake it up</div>
+        </div>
+      </div>
+
+      </div><!-- /#right-stack — only fox-status + task-hud + agent-monitor inside -->
+
+      <!-- Agent activity HUD on canvas -->
+      <div id="agent-canvas-hud" class="hidden">
+        <div class="achud-header">
+          <span class="achud-pulse"></span>
+          <span class="achud-title">The fox is thinking…</span>
+          <span class="achud-timer" id="achud-timer">0.0s</span>
+        </div>
+        <div class="achud-pipeline" id="achud-pipeline"></div>
+        <div class="achud-input" id="achud-input"></div>
+        <div class="achud-bar"><div class="achud-fill"></div></div>
+      </div>
+
+      <!-- agent-monitor moved to body level so it stays above modals -->
+
+      <!-- ── GALLERY overlay (left side of canvas) ── -->
+      <div id="gallery-panel">
+        <!-- Collapse tab — always visible -->
+        <button class="gallery-tab" onclick="window.toggleGallery()" title="Collapse / expand">
+          <span class="gallery-tab-icon">🖼️</span>
+          <span class="gallery-tab-arrow" id="gallery-arrow">‹</span>
+        </button>
+        <!-- Scrollable content -->
+        <div id="gallery-inner">
+          <div class="gallery-inner-header">
+            <span>🌱 Little Prince's Codex</span>
+            <button class="gallery-share-btn" onclick="window.shareTodayDiscoveries()" title="Generate a share image of today's finds">
+              📤 Share Today
+            </button>
+          </div>
+          <!-- Horizontal scrolling tab bar (20 categories, one tab each) -->
+          <div id="gallery-tabs"></div>
+          <!-- Content area: shows the active tab's photo grid -->
+          <div id="gallery-content"></div>
+        </div>
+      </div>
+
+      <!-- Centered FAB — opens the fox journal modal (which contains the
+           real photo-upload CTA). The ONLY user input entry point. -->
+      <button id="map-camera-fab" type="button"
+        title="Open the fox journal and record a new find" onclick="window.openJournal()">
+        <span class="fab-ring fab-ring-1"></span>
+        <span class="fab-ring fab-ring-2"></span>
+        <span class="fab-ring fab-ring-3"></span>
+        <span class="fab-sparkle s1">✦</span>
+        <span class="fab-sparkle s2">✧</span>
+        <span class="fab-sparkle s3">✦</span>
+        <span class="fab-sparkle s4">✧</span>
+        <span class="fab-core">
+          <span class="fab-icon">📷</span>
+          <span class="fab-text">
+            <span class="fab-label">Capture this moment</span>
+            <span class="fab-sub">Bring this instant back to your planet</span>
+          </span>
+        </span>
+      </button>
+
+      <!-- First-launch onboarding hint pointing to FAB -->
+      <div id="onboarding-hint" class="hidden">
+        <div class="ob-bubble">Start here</div>
+        <div class="ob-arrow">↓</div>
+      </div>
+
+      <!-- ── FULL TASK PANEL (centered inside map canvas) ── -->
+      <div id="task-panel" class="hidden">
+        <div class="tp-overlay" onclick="window.closeTaskPanel()"></div>
+        <div class="tp-content">
+          <div class="tp-header">
+            <div class="tp-title"><span>📖</span><span>The Fox's Notebook</span></div>
+            <div class="tp-progress-wrap">
+              <span id="tp-progress-text">0 / 0 done</span>
+              <div class="tp-progress-bar"><div id="tp-progress-fill"></div></div>
+            </div>
+            <button class="tp-close" onclick="window.closeTaskPanel()">✕</button>
+          </div>
+          <div class="tp-tabs">
+            <button class="tp-tab active" data-cat="all"     onclick="window.switchTaskTab('all')">All</button>
+            <button class="tp-tab"        data-cat="main"    onclick="window.switchTaskTab('main')">⭐ Wishes</button>
+            <button class="tp-tab"        data-cat="side"    onclick="window.switchTaskTab('side')">🌟 Side Quests</button>
+            <button class="tp-tab"        data-cat="special" onclick="window.switchTaskTab('special')">🎁 Chance Encounters</button>
+          </div>
+          <div id="tp-list"></div>
+
+          <!-- AI regenerate bar -->
+          <div id="tp-regen">
+            <div id="tp-regen-bar">
+              <span class="tp-regen-icon">🦊</span>
+              <input id="tp-regen-input" type="text"
+                placeholder="Tell the fox what you'd like to see…  e.g. find a local dessert spot"
+                onkeydown="if(event.key==='Enter') window.submitRegenTask()">
+              <button id="tp-regen-btn" onclick="window.submitRegenTask()">✨ Add Note</button>
+            </div>
+            <div id="tp-regen-status" class="hidden"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Landmark info card (shown on click) -->
+      <div id="landmark-card" class="hidden">
+        <button id="landmark-close">✕</button>
+        <div id="landmark-card-icon"></div>
+        <div id="landmark-card-name"></div>
+        <div id="landmark-card-name-en"></div>
+        <div id="landmark-card-story"></div>
+      </div>
+
+      <!-- Floating hover preview for user-discovered 3D models -->
+      <div id="discovered-hover-card" class="hidden">
+        <div class="dhc-photo-wrap">
+          <img id="dhc-photo" alt="">
+          <div id="dhc-photo-fallback" class="dhc-photo-fallback hidden">💎</div>
+        </div>
+        <div class="dhc-body">
+          <div class="dhc-cat" id="dhc-cat"></div>
+          <div class="dhc-name" id="dhc-name"></div>
+          <div class="dhc-name-en" id="dhc-name-en"></div>
+          <div class="dhc-meta" id="dhc-meta"></div>
+          <div class="dhc-insight" id="dhc-insight"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- right panel removed — achievements moved into Planet Dashboard -->
+  </main>
+
+
+  <!-- (Agent monitor moved into #right-stack — see inside #map-wrap above) -->
+
+  <!-- ═══ ACHIEVEMENT POPUP ════════════════════════════════════════════════ -->
+  <div id="achievement-popup" class="hidden">
+    <div class="ach-glow"></div>
+    <div class="ach-body">
+      <div id="ach-icon">🏆</div>
+      <div class="ach-text">
+        <div class="ach-label">A new memory for the fox</div>
+        <div id="ach-name">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHOTO MOOD MODAL (2-phase: input → result) ══════════════════════ -->
+  <div id="photo-modal" class="hidden">
+    <div class="pm-overlay" id="pm-overlay"></div>
+    <div class="pm-content">
+
+      <div class="pm-header">
+        <div class="pm-title"><span>✏️</span><span id="pm-header-text">Capture this moment</span></div>
+        <button class="pm-close" id="pm-close">✕</button>
+      </div>
+
+      <!-- ── Phase 1: Photo-first share (photo on top, text + context below) ── -->
+      <div id="pm-phase1">
+        <div class="pm-body pm-body-tall pm-body-moment">
+
+          <!-- Photo hero — large, primary -->
+          <input type="file" id="photo-upload-modal" accept="image/*"
+            style="position:fixed;top:-300px;left:-300px;width:1px;height:1px;opacity:0;">
+          <div class="pm-photo-hero" id="pm-photo-hero">
+            <!-- When photo present: show big image + controls -->
+            <div class="pm-photo-hero-image hidden" id="pm-photo-thumb">
+              <img id="pm-preview" src="" alt="">
+              <div class="pm-photo-hero-controls">
+                <label class="pm-photo-iconbtn" for="photo-upload-modal" title="Replace photo">🔄</label>
+                <button class="pm-photo-iconbtn pm-photo-remove" id="pm-photo-remove" title="Remove photo">✕</button>
+              </div>
+            </div>
+            <!-- When no photo: big add placeholder -->
+            <label class="pm-photo-placeholder" for="photo-upload-modal" id="pm-photo-add-btn">
+              <span class="pp-icon">📷</span>
+              <span class="pp-text">Pick a photo</span>
+              <span class="pp-hint">Let the fox identify it · or skip and just write a note</span>
+            </label>
+          </div>
+
+          <!-- Text input (secondary, below photo) -->
+          <textarea id="pm-mood" rows="3"
+            placeholder="A line or two about this moment… what did you see? what came to mind?"></textarea>
+
+          <!-- Quick mood tags -->
+          <div class="pm-mood-tags">
+            <span class="pm-tag" onclick="appendMoodTag('😍 Love it!')">😍 Love it</span>
+            <span class="pm-tag" onclick="appendMoodTag('🤩 Wow!')">🤩 Wow</span>
+            <span class="pm-tag" onclick="appendMoodTag('🌿 So calming')">🌿 Calming</span>
+            <span class="pm-tag" onclick="appendMoodTag('🏃 Passed by')">🏃 Passed by</span>
+            <span class="pm-tag" onclick="appendMoodTag('🍜 Delicious!')">🍜 Delicious</span>
+            <span class="pm-tag" onclick="appendMoodTag('📍 Must visit!')">📍 Must visit</span>
+          </div>
+
+          <!-- Compact context chips -->
+          <div class="pm-field pm-field-compact">
+            <div class="pm-field-label">⏰ Time</div>
+            <div class="pm-chip-row" data-group="time">
+              <button class="pm-choice" data-value="morning">🌅 Morning</button>
+              <button class="pm-choice" data-value="day">☀️ Day</button>
+              <button class="pm-choice" data-value="evening">🌇 Evening</button>
+              <button class="pm-choice" data-value="night">🌙 Night</button>
+            </div>
+          </div>
+          <div class="pm-field pm-field-compact">
+            <div class="pm-field-label">🌤️ Weather</div>
+            <div class="pm-chip-row" data-group="weather">
+              <button class="pm-choice" data-value="sunny">☀️ Sunny</button>
+              <button class="pm-choice" data-value="cloudy">☁️ Cloudy</button>
+              <button class="pm-choice" data-value="rain">🌧️ Rain</button>
+              <button class="pm-choice" data-value="humid">💦 Humid</button>
+              <button class="pm-choice" data-value="indoor">🏠 Indoor</button>
+            </div>
+          </div>
+          <div class="pm-field pm-field-compact">
+            <div class="pm-field-label">👥 With</div>
+            <div class="pm-chip-row" data-group="company">
+              <button class="pm-choice" data-value="solo">🧍 Solo</button>
+              <button class="pm-choice" data-value="friends">👯 Friends</button>
+              <button class="pm-choice" data-value="family">👨‍👩‍👧 Family</button>
+              <button class="pm-choice" data-value="partner">💑 Partner</button>
+              <button class="pm-choice" data-value="colleagues">🤝 Colleagues</button>
+            </div>
+          </div>
+        </div>
+        <div class="pm-footer">
+          <button class="pm-btn-cancel" id="pm-cancel">Cancel</button>
+          <button class="pm-btn-submit" id="pm-submit">
+            <span id="pm-submit-icon">🔬</span><span id="pm-submit-label">AI Identify</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Phase 2: Recognition Result ── -->
+      <div id="pm-phase2" class="hidden">
+
+        <!-- Loading state -->
+        <div id="pm-loading" class="pm-loading">
+          <div class="pm-spinner"></div>
+          <span id="pm-loading-text">Planet AI is scanning…</span>
+          <span id="pm-loading-elapsed" class="pm-loading-elapsed">0s</span>
+          <button class="pm-loading-cancel" onclick="window.cancelVision()">⛔ Cancel scan</button>
+        </div>
+
+        <!-- AI failure state (transparent error UI instead of misleading fake data) -->
+        <div id="pm-fail" class="pm-fail hidden">
+          <div class="pm-fail-icon">🤖</div>
+          <div class="pm-fail-title">The fox couldn't recognize this one</div>
+          <div class="pm-fail-reason" id="pm-fail-reason">Error: unknown</div>
+          <div class="pm-fail-tip">Try scanning again, or pick the closest category yourself to save it to your planet.</div>
+
+          <div class="pm-fail-actions">
+            <button class="pm-fail-btn" onclick="window.retryVision()">🔄 Try again</button>
+            <button class="pm-fail-btn ghost" onclick="window.togglePmCatPicker()">🏷️ Pick a category</button>
+          </div>
+
+          <div id="pm-cat-picker" class="pm-cat-picker hidden">
+            <div class="pm-cat-picker-label">Choose the closest category</div>
+            <!-- Grid auto-populated by app.js _renderCatPicker() at init -->
+            <div class="pm-cat-picker-grid" id="pm-cat-picker-grid"></div>
+          </div>
+        </div>
+
+        <!-- Result (shown after loading) -->
+        <div id="pm-result-body" class="hidden">
+          <div class="pm-result-header">
+            <img id="pm-result-thumb" src="" alt="">
+            <div class="pm-result-info">
+              <div class="pm-result-cat">
+                <span id="pm-result-cat"></span>
+                <span class="pm-species-badge new hidden" id="pm-species-new">✨ New species</span>
+                <span class="pm-species-badge old hidden" id="pm-species-old">📚 Already in codex</span>
+              </div>
+              <div class="pm-result-name" id="pm-result-name"></div>
+              <div class="pm-result-name-en" id="pm-result-name-en"></div>
+              <div class="pm-result-loc" id="pm-result-loc"></div>
+            </div>
+          </div>
+
+          <!-- User's own note (shown when they wrote something in Phase 1) -->
+          <div class="pm-user-note hidden" id="pm-user-note">
+            <div class="pm-user-note-label">📝 Your note</div>
+            <div class="pm-user-note-text" id="pm-user-note-text"></div>
+            <div class="pm-user-note-tags" id="pm-user-note-tags"></div>
+          </div>
+
+          <!-- Category-specific details cards -->
+          <div class="pm-details" id="pm-details"></div>
+
+          <div class="pm-story-block">
+            <div class="pm-story-label">💡 Insight</div>
+            <div class="pm-result-story" id="pm-result-story"></div>
+          </div>
+
+          <!-- Correction row -->
+          <div class="pm-correction">
+            <div class="pm-correction-label">❓ Off the mark? Add a keyword and rescan</div>
+            <div class="pm-correction-row">
+              <input id="pm-correction-input" type="text"
+                placeholder="e.g. public bus, tropical palm tree, fried kway teow…"
+                onkeydown="if(event.key==='Enter') window.reRecognize()">
+              <button id="pm-rerecognize-btn" onclick="window.reRecognize()">🔄 Rescan</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pm-footer" id="pm-phase2-footer">
+          <button class="pm-btn-cancel" onclick="window.backToPhase1()">← Back</button>
+          <button class="pm-btn-confirm hidden" id="pm-confirm" onclick="window.confirmAdd()">
+            <span>🌍</span><span>Add to my planet</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ ITEM DETAIL MODAL (clicking a gallery photo opens this) ═══════ -->
+  <div id="item-detail-modal" class="hidden">
+    <div class="idm-overlay" onclick="window.closeItemDetail()"></div>
+    <div class="idm-content">
+
+      <div class="idm-header">
+        <div class="idm-cat-wrap">
+          <span class="idm-cat-emoji" id="idm-cat-emoji">💎</span>
+          <span class="idm-cat-name" id="idm-cat-name">Collection</span>
+        </div>
+        <button class="idm-close" onclick="window.closeItemDetail()">✕</button>
+      </div>
+
+      <!-- Big hero photo or placeholder -->
+      <div class="idm-photo-wrap" id="idm-photo-wrap">
+        <img id="idm-photo" src="" alt="">
+        <div class="idm-photo-placeholder hidden" id="idm-photo-placeholder">💎</div>
+      </div>
+
+      <div class="idm-body">
+        <div class="idm-title-row">
+          <div class="idm-title">
+            <div class="idm-name" id="idm-name"></div>
+            <div class="idm-name-en" id="idm-name-en"></div>
+          </div>
+          <div class="idm-when" id="idm-when"></div>
+        </div>
+        <div class="idm-location" id="idm-location"></div>
+
+        <!-- User's mood/note when adding -->
+        <div class="idm-user-note hidden" id="idm-user-note">
+          <div class="idm-note-label">📝 My note</div>
+          <div class="idm-note-text" id="idm-note-text"></div>
+          <div class="idm-note-tags" id="idm-note-tags"></div>
+        </div>
+
+        <!-- Category-specific details -->
+        <div class="idm-details" id="idm-details"></div>
+
+        <!-- Fox's insight -->
+        <div class="idm-story-block">
+          <div class="idm-story-label">💡 Insight</div>
+          <div class="idm-story-text" id="idm-story-text"></div>
+        </div>
+      </div>
+
+      <div class="idm-footer">
+        <button class="idm-btn-del" id="idm-btn-del">🗑 Remove from planet</button>
+        <button class="idm-btn-close" onclick="window.closeItemDetail()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FOX JOURNAL MODAL — the new home of chat history + primary input ═══ -->
+  <div id="journal-modal" class="hidden">
+    <div class="jm-overlay" onclick="window.closeJournal()"></div>
+    <div class="jm-content">
+      <div class="jm-header">
+        <span class="jm-icon">🦊</span>
+        <div class="jm-titles">
+          <div class="jm-title">The Fox's Journal</div>
+          <div class="jm-subtitle">Le Renard · stories of you and the fox</div>
+        </div>
+        <button class="jm-close" onclick="window.closeJournal()">✕</button>
+      </div>
+
+      <!-- Chat history lives here now (moved out of the removed left aside) -->
+      <div id="chat-messages"></div>
+
+      <div class="jm-footer">
+        <label for="photo-upload" class="jm-cta" title="Take a photo and let the fox identify it">
+          <span class="jm-cta-icon">💎</span>
+          <span class="jm-cta-text">New discovery · Capture this moment</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SHARE PREVIEW MODAL ═══════════════════════════════════════════════ -->
+  <div id="share-modal" class="hidden">
+    <div class="sm-overlay" onclick="window.closeShareModal()"></div>
+    <div class="sm-content">
+      <div class="sm-header">
+        <div class="sm-title">📤 Today's Finds · Share Card</div>
+        <button class="sm-close" onclick="window.closeShareModal()">✕</button>
+      </div>
+
+      <div class="sm-body">
+        <div id="sm-loading" class="sm-loading">
+          <div class="sm-spinner"></div>
+          <span>Generating share image…</span>
+        </div>
+        <div id="sm-preview-wrap" class="sm-preview-wrap hidden">
+          <img id="sm-preview-img" alt="">
+        </div>
+        <div id="sm-empty" class="sm-empty hidden">
+          <div class="sm-empty-icon">📭</div>
+          <div class="sm-empty-title">No new finds today…</div>
+          <div class="sm-empty-sub">Snap a photo first and let the fox take a look?</div>
+        </div>
+      </div>
+
+      <div id="sm-footer" class="sm-footer hidden">
+        <button class="sm-btn-sec" onclick="window.copyShareImage()">📋 Copy image</button>
+        <button class="sm-btn-pri" onclick="window.downloadShareImage()">💾 Download</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ BOND-UP TOAST ════════════════════════════════════════════════════ -->
+  <div id="bond-toast" class="hidden"></div>
+
+  <!-- ═══ SPONSOR TOAST ════════════════════════════════════════════════════ -->
+  <div id="sponsor-toast" class="hidden">
+    <div class="toast-badge">🎁 Sponsored Quest</div>
+    <div id="toast-content"></div>
+  </div>
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- App -->
+  <script src="js/agents.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
