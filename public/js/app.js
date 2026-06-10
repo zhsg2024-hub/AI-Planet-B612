@@ -139,7 +139,22 @@ function _renderMonitorEntry(entry) {
   // Auto-expand running entries
   el.classList.add('expanded');
 
-  document.getElementById('monitor-entries').prepend(el);
+  const container = document.getElementById('monitor-entries');
+  container.prepend(el);
+
+  // Cap the list at 30 entries; trim the oldest (= last in DOM) so the
+  // scroll list never grows unbounded.
+  const MAX_ENTRIES = 30;
+  while (container.children.length > MAX_ENTRIES) {
+    const oldest = container.lastElementChild;
+    if (!oldest) break;
+    const oldestId = oldest.id?.replace(/^mon-/, '');
+    if (oldestId && _timerIntervals[oldestId]) {
+      clearInterval(_timerIntervals[oldestId]);
+      delete _timerIntervals[oldestId];
+    }
+    oldest.remove();
+  }
 
   // Live timer
   _timerIntervals[entry.id] = setInterval(() => {
